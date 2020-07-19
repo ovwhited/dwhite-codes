@@ -1,0 +1,17 @@
+{
+  "name": "dwhite_codes",
+  "version": "1.0.0",
+  "description": "My website",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "ov.whited@gmail.com",
+  "license": "MIT",
+  "dependencies": {
+    "ejs": "^3.1.3",
+    "express": "^4.17.1",
+    "marked": "^1.1.1",
+    "nedb-promises": "^4.0.3"
+  }
+}
