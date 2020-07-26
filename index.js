@@ -14,4 +14,4 @@ app.get('/', async (req, res) => {
   res.render('index', {posts: posts});
 });
 
-app.listen(8000);
+app.listen(80);
