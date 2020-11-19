@@ -35,17 +35,27 @@
       font-size: 10px;
     }
   </style>
+  <script type="text/javascript">
+    let populate_latest_posts = async () => {
+      let latest_posts_div = document.getElementById('latest_posts');
+      let posts = await (await fetch('/posts.json?limit=5')).json();
+      let add_post = post => {
+        let title_h2 = document.createElement('h2');
+        title_h2.textContent = post.title;
+        latest_posts_div.appendChild(title_h2);
+
+        let post_body_div = document.createElement('div');
+        post_body_div.innerHTML = post.body_markdown;
+        latest_posts_div.appendChild(post_body_div);
+      }
+      posts.forEach(add_post);
+    };
+  </script>
 </head>
-<body>
+<body onload="populate_latest_posts()">
   <div id="live_code" class="live_code_banner_container" for-username="d-r-w"></div>
-  <div class="container">
+  <div id="latest_posts" class="container">
     <h1>Latest Posts</h1>
-    <% posts.forEach(post => { %>
-      <h2><%= post.title %></h2>
-      <div>
-        <%- post.body_markdown %>
-      </div>
-    <% }); %>
   </div>
 </body>
 </html>
