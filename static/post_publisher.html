@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>dwhite.codes</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Inconsolata&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10.1.1/build/styles/monokai.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10.1.1/build/highlight.min.js"></script>
+  <style type="text/css">
+    html, body {
+      height: 100%
+    }
+    .fill {
+      min-height: 100%;
+      height: 100%;
+    }
+  </style>
+  <script type="text/javascript">
+    let $ = id => document.getElementById(id);
+
+    let alert = {};
+    alert.show = (text, timeout_ms) => {
+      let alert_div = $('alert_div');
+      alert_div.textContent = text;
+      alert_div.style.display = 'block';
+      alert.current_timeout && clearTimeout(alert.current_timeout);
+      alert.current_timeout = setTimeout(alert.hide, timeout_ms);
+    };
+    alert.hide = () => $('alert_div').style.display = 'none';
+
+    let fetch_json = async (uri) => {
+      let fetch_response = await fetch(uri);
+      if(fetch_response.ok) {
+        return await fetch_response.json();
+      }
+      else {
+        throw `API error - ${fetch_response.status}: ${fetch_response.statusText}`;
+      }
+    };
+
+    let plain_text_changed = async (new_plain_text) => {
+      let fetch_marked_html = async (plain_text) => {
+        let marked_json = await fetch_json(`/marked.json?plain_text=${encodeURIComponent(plain_text)}`);
+        return marked_json.marked_html;
+      };
+      try {
+        let marked_html = await fetch_marked_html(new_plain_text);
+        $('marked_div').innerHTML = marked_html;
+      }
+      catch(error) {
+        console.error('Caught error:', error);
+        alert.show(error, 5000);
+      }
+    };
+
+    let publish_post = async () => {
+      let publish_button = $('publish_button');
+      publish_button.style.display = 'none';
+
+      let auth_key = encodeURIComponent($('auth_key_box').value);
+      let post_title = encodeURIComponent($('post_title_box').value);
+      let body_markdown = encodeURIComponent($('body_markdown_textarea').value);
+      
+      try {
+        let response_json = await fetch_json(`/publish_post.json?key=${auth_key}&title=${post_title}&body_markdown=${body_markdown}`);
+        console.log(response_json);
+        publish_button.textContent = 'Published!';
+        publish_button.classList.remove('btn-primary');
+        publish_button.classList.add('btn-success');
+        setTimeout(() => {
+          publish_button.textContent = 'Publish';
+          publish_button.classList.remove('btn-success');
+          publish_button.classList.add('btn-primary');
+        }, 5000);
+      }
+      catch(error) {
+        console.error('Caught error:', error);
+        alert.show(error, 5000);
+      }
+
+      publish_button.style.display = '';
+    };
+  </script>
+</head>
+<body onload="">
+  <div class="container fill">
+    <div class="row">
+      <div class="col">
+        <h3>Plain Text</h3>
+      </div>
+      <div class="col">
+        <h3>Marked</h3>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <textarea id="body_markdown_textarea" class="w-100 border rounded" style="resize: none; height: 450px" placeholder="Start editing.." oninput="plain_text_changed(event.target.value)"></textarea>
+      </div>
+      <div class="col">
+        <div id="marked_div" class="w-100 border rounded" style="height: 450px; overflow: scroll"></div>
+      </div>
+      <div class="w-100"></div>
+      <div class="col">
+        <label class="sr-only" for="post_title_form">Post Title</label>
+        <div class="input-group mb-2">
+          <div class="input-group-prepend">
+            <div class="input-group-text">Post Title</div>
+          </div>
+          <input id="post_title_box" type="text" class="form-control" id="post_title_form">
+        </div>
+      </div>
+      <div class="col">
+        <label class="sr-only" for="auth_key_form">Auth Key</label>
+        <div class="input-group mb-2">
+          <div class="input-group-prepend">
+            <div class="input-group-text">Auth Key</div>
+          </div>
+          <input id="auth_key_box" type="password" class="form-control" id="auth_key_form">
+        </div>
+      </div>
+      <div class="col">
+        <button id="publish_button" class="btn btn-primary" onclick="publish_post()">Publish</button>
+      </div>
+    </div>
+  </div>
+  <div id="alert_div" class="alert alert-danger fade show fixed-top" style="display: none" role="alert">
+    This is a danger alert—check it out!
+  </div>
+</body>
+</html>

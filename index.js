@@ -1,3 +1,8 @@
+const AUTH_KEY = process.env.AUTH_KEY;
+if(!AUTH_KEY) {
+  throw 'process.env.AUTH_KEY must be set!';
+}
+
 const express = require('express');
 const app = express();
 
@@ -27,6 +32,35 @@ app.get('/posts.json', async (req, res) => {
   catch(error) {
     console.error(error);
     res.sendStatus(500);
+  }
+});
+
+app.get('/marked.json', async (req, res) => {
+  let plain_text = req.query.plain_text;
+  res.json({ marked_html: marked(plain_text) });
+});
+
+app.get('/publish_post.json', async (req, res) => {
+  let is_authorized = req.query.key === AUTH_KEY;
+  if(is_authorized) {
+    let current_time = Date.now();
+    let post = {
+      created_ts: current_time,
+      modified_ts: current_time,
+      title: req.query.title,
+      body_markdown: req.query.body_markdown,
+    };
+    try {
+      await db.update({title: post.title}, post, { upsert: true });
+      res.json({ success: true });
+    }
+    catch(error) {
+      console.error(error);
+      res.sendStatus(500);
+    }
+  }
+  else {
+    res.sendStatus(403);
   }
 });
 
