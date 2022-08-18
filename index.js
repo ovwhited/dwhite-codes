@@ -3,6 +3,8 @@ if(!AUTH_KEY) {
   throw 'process.env.AUTH_KEY must be set!';
 }
 
+const https = require('https');
+const fs = require('fs');
 const express = require('express');
 const app = express();
 
@@ -64,4 +66,8 @@ app.get('/publish_post.json', async (req, res) => {
   }
 });
 
-app.listen(8000);
+https.createServer({
+  key: fs.readFileSync('/etc/letsencrypt/live/dwhite.codes/privkey.pem'),
+  cert: fs.readFileSync('/etc/letsencrypt/live/dwhite.codes/fullchain.pem'),
+},
+app).listen(8000);
