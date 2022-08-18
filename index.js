@@ -8,11 +8,11 @@ const fs = require('fs');
 const express = require('express');
 const app = express();
 
+app.use(express.static('static', { index: 'index.html' }));
+
 // Upgrade from HTTP to HTTPS
 app.enable('trust proxy');
 app.use((req, res, next) => req.secure ? next() : res.redirect(`https://${req.headers.host}${req.url}`));
-
-app.use(express.static('static', { index: 'index.html' }));
 
 const nedb = require('nedb-promises');
 const db = new nedb({ filename: 'posts.ndjson', autoload: true });
