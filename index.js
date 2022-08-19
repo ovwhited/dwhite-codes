@@ -3,16 +3,18 @@ if(!AUTH_KEY) {
   throw 'process.env.AUTH_KEY must be set!';
 }
 
+const http = require('http');
 const https = require('https');
 const fs = require('fs');
 const express = require('express');
 const app = express();
 
-app.use(express.static('static', { index: 'index.html' }));
+
 
 // Upgrade from HTTP to HTTPS
 app.enable('trust proxy');
-app.use((req, res, next) => req.secure ? next() : res.redirect(`https://${req.headers.host}${req.url}`));
+app.use('/', (req, res, next) => req.secure ? next() : res.redirect(`https://${req.headers.host}${req.url}`));
+app.use('/', express.static('static', { index: 'index.html' }));
 
 const nedb = require('nedb-promises');
 const db = new nedb({ filename: 'posts.ndjson', autoload: true });
@@ -70,8 +72,10 @@ app.get('/publish_post.json', async (req, res) => {
   }
 });
 
+http.createServer(app).listen(8000);
+
 https.createServer({
   key: fs.readFileSync('/etc/letsencrypt/live/dwhite.codes/privkey.pem'),
   cert: fs.readFileSync('/etc/letsencrypt/live/dwhite.codes/fullchain.pem'),
 },
-app).listen(8000);
+app).listen(8080);
