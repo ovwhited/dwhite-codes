@@ -9,12 +9,9 @@ const fs = require('fs');
 const express = require('express');
 const app = express();
 
-
-
 // Upgrade from HTTP to HTTPS
 app.enable('trust proxy');
 app.use('/', (req, res, next) => req.secure ? next() : res.redirect(`https://${req.headers.host}${req.url}`));
-app.use('/', express.static('static', { index: 'index.html' }));
 
 const nedb = require('nedb-promises');
 const db = new nedb({ filename: 'posts.ndjson', autoload: true });
@@ -24,17 +21,17 @@ app.get('/posts.json', async (req, res) => {
   let posts;
   let limit = req.query.limit ? req.query.limit : 500;
   let target_fields = req.query.fields ?
-    req.query.fields.split(',').reduce((o, field) => (o[field] = 1) && o, {}) : {};
-
+  req.query.fields.split(',').reduce((o, field) => (o[field] = 1) && o, {}) : {};
+  
   try {
     posts = (await db.find({}, target_fields).sort({ created_ts: -1 }).limit(limit))
-      .map(post => {
-        if(post.body_markdown) {
-          post.body_markdown = marked(post.body_markdown);
-        }
-        return post;
-      });
-
+    .map(post => {
+      if(post.body_markdown) {
+        post.body_markdown = marked(post.body_markdown);
+      }
+      return post;
+    });
+    
     res.json(posts);
   }
   catch(error) {
@@ -71,6 +68,16 @@ app.get('/publish_post.json', async (req, res) => {
     res.sendStatus(403);
   }
 });
+
+app.get('/.well_known/nostr.json', async (req, res) => {
+  res.json({
+    'names': {
+      'dwhite': '1myxefzpycnxm4f0ndk7esp508m00rrzxvh3x443xajkrgyz78vpqtamzap'
+    }
+  });
+});
+
+app.use('/', express.static('static', { index: 'index.html' }));
 
 http.createServer(app).listen(8000);
 
