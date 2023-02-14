@@ -1,2 +1,3 @@
 node_modules/
 static/live_code_banner.js
+static/.well-known/
