@@ -69,10 +69,10 @@ app.get('/publish_post.json', async (req, res) => {
   }
 });
 
-app.get('/.well_known/nostr.json', async (req, res) => {
+app.get('/.well-known/nostr.json', async (req, res) => {
   res.json({
     'names': {
-      'dwhite': '1myxefzpycnxm4f0ndk7esp508m00rrzxvh3x443xajkrgyz78vpqtamzap'
+      'dwhite': 'd90d948824c4cdbaa5f36dbd98068f3edef18c4665e26ad626ecac34105e3b02'
     }
   });
 });
